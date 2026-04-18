@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Paquetería Progresar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:linear-gradient(135deg,#0b3d91,#1c73e8);
+min-height:100vh;
+}
+
+header{
+background:#062a66;
+color:white;
+padding:18px;
+text-align:center;
+font-weight:bold;
+font-size:20px;
+}
+
+.container{
+padding:15px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-top:12px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin:6px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:14px;
+background:#0b3d91;
+color:white;
+border:none;
+margin-top:8px;
+border-radius:10px;
+font-weight:bold;
+}
+
+.panelSupervisor{
+display:none;
+}
+
+.panelGuarda{
+display:none;
+}
+
+.estadoPendiente{
+background:#ffe0b2;
+color:#e65100;
+padding:6px;
+border-radius:6px;
+font-weight:bold;
+}
+
+.estadoEntregado{
+background:#c8e6c9;
+color:#1b5e20;
+padding:6px;
+border-radius:6px;
+font-weight:bold;
+}
+
+img{
+width:100%;
+margin-top:10px;
+border-radius:10px;
+}
+
+h3{
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+📦 PAQUETERÍA PROGRESAR
+</header>
+
+<div class="container">
+
+<h3>🔐 Acceso Guarda</h3>
+
+<div class="card">
+
+<select id="conjuntoLogin"></select>
+
+<input type="password"
+id="claveConjunto"
+placeholder="Clave del conjunto">
+
+<button onclick="loginGuarda()">
+Entrar
+</button>
+
+</div>
+
+<div id="panelGuarda" class="panelGuarda">
+
+<h3>📥 Recepción</h3>
+
+<div class="card">
+
+<select id="guardaRecibe"></select>
+
+<input id="guia" placeholder="Número guía">
+<input id="torre" placeholder="Torre">
+<input id="apto" placeholder="Apartamento">
+
+<button onclick="registrarRecepcion()">
+Registrar Recepción
+</button>
+
+</div>
+
+<h3>📤 Entrega</h3>
+
+<div class="card">
+
+<input id="buscarGuiaEntrega"
+placeholder="Número guía">
+
+<input id="recibe"
+placeholder="Nombre quien recibe">
+
+<select id="guardaEntrega"></select>
+
+<input type="file"
+id="fotoEntrega">
+
+<button onclick="registrarEntrega()">
+Registrar Entrega
+</button>
+
+</div>
+
+</div>
+
+<h3>🔒 Panel Supervisor</h3>
+
+<div class="card">
+
+<input type="password"
+id="claveSupervisor"
+placeholder="Clave Supervisor">
+
+<button onclick="loginSupervisor()">
+Entrar
+</button>
+
+<div id="panelSupervisor" class="panelSupervisor">
+
+<input id="nuevoConjunto"
+placeholder="Nombre conjunto">
+
+<button onclick="agregarConjunto()">
+Agregar Conjunto
+</button>
+
+<button onclick="verClaves()">
+🔐 Ver Claves
+</button>
+
+<div id="listaClaves"></div>
+
+<input id="nuevoGuarda"
+placeholder="Nuevo guarda">
+
+<button onclick="agregarGuarda()">
+Agregar Guarda
+</button>
+
+<h4>🔎 Buscar Guía</h4>
+
+<input id="buscarGuia"
+placeholder="Número guía">
+
+<button onclick="buscarGuia()">
+Buscar
+</button>
+
+<h4>📦 Filtrar por conjunto</h4>
+
+<select id="filtroConjunto"></select>
+
+<button onclick="verPendientes()">
+Ver Pendientes
+</button>
+
+<button onclick="verHistorial()">
+Ver Historial
+</button>
+
+<button onclick="exportarExcel()">
+📊 Exportar Excel
+</button>
+
+<button onclick="borrarAntiguos()">
+🗑 Borrar Entregados Antiguos
+</button>
+
+<div id="historial"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+updateDoc,
+deleteDoc,
+doc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyC2bug8ehtyn58pUoq9hsNAWRnXPklfggE",
+authDomain: "paqueteria-progresar.firebaseapp.com",
+projectId: "paqueteria-progresar",
+storageBucket: "paqueteria-progresar.firebasestorage.app",
+messagingSenderId: "662000932629",
+appId: "1:662000932629:web:9d06fbc537f02d93a9fb1c"
+
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+/* GENERAR CLAVE */
+
+function generarClave(){
+
+let numero=
+Math.floor(1000+Math.random()*9000);
+
+return "PRG-"+numero;
+
+}
+
+/* LOGIN */
+
+window.loginSupervisor=function(){
+
+if(claveSupervisor.value==="2026"){
+
+panelSupervisor.style.display="block";
+
+}else{
+
+alert("Clave incorrecta");
+
+}
+
+};
+
+/* AGREGAR CONJUNTO */
+
+window.agregarConjunto=async function(){
+
+let clave=generarClave();
+
+await addDoc(
+collection(db,"conjuntos"),
+{
+nombre:nuevoConjunto.value,
+clave
+}
+);
+
+alert("Clave: "+clave);
+
+cargarDatos();
+
+};
+
+/* VER CLAVES */
+
+window.verClaves=async function(){
+
+listaClaves.innerHTML="";
+
+let query=
+await getDocs(collection(db,"conjuntos"));
+
+query.forEach(d=>{
+
+let r=d.data();
+
+listaClaves.innerHTML+=`
+<div class="card">
+<b>${r.nombre}</b><br>
+Clave: ${r.clave}
+</div>
+`;
+
+});
+
+};
+
+/* AGREGAR GUARDA */
+
+window.agregarGuarda=async function(){
+
+await addDoc(
+collection(db,"guardas"),
+{
+nombre:nuevoGuarda.value
+}
+);
+
+cargarDatos();
+
+};
+
+/* LOGIN GUARDA */
+
+window.loginGuarda=async function(){
+
+let acceso=false;
+
+let query=
+await getDocs(collection(db,"conjuntos"));
+
+query.forEach(d=>{
+
+let r=d.data();
+
+if(r.nombre===conjuntoLogin.value
+&& r.clave===claveConjunto.value){
+
+acceso=true;
+
+}
+
+});
+
+if(acceso){
+
+panelGuarda.style.display="block";
+
+}else{
+
+alert("Clave incorrecta");
+
+}
+
+};
+
+/* RECEPCIÓN */
+
+window.registrarRecepcion=async function(){
+
+await addDoc(
+collection(db,"paquetes"),
+{
+conjunto:conjuntoLogin.value,
+guia:guia.value,
+torre:torre.value,
+apto:apto.value,
+estado:"PENDIENTE",
+fechaRecepcion:new Date().toLocaleString()
+}
+);
+
+alert("Paquete registrado");
+
+};
+
+/* ENTREGA */
+
+window.registrarEntrega=async function(){
+
+let query=
+await getDocs(collection(db,"paquetes"));
+
+query.forEach(async d=>{
+
+let r=d.data();
+
+if(r.guia===buscarGuiaEntrega.value){
+
+let archivo=fotoEntrega.files[0];
+
+let reader=new FileReader();
+
+reader.onload=async function(){
+
+await updateDoc(
+doc(db,"paquetes",d.id),
+{
+estado:"ENTREGADO",
+recibe:recibe.value,
+guardaEntrega:guardaEntrega.value,
+fotoEntrega:reader.result,
+fechaEntrega:new Date().toLocaleString()
+}
+);
+
+alert("Entrega registrada");
+
+};
+
+if(archivo){
+
+reader.readAsDataURL(archivo);
+
+}
+
+}
+
+});
+
+};
+
+/* BUSCAR GUIA */
+
+window.buscarGuia=async function(){
+
+historial.innerHTML="";
+
+let query=
+await getDocs(collection(db,"paquetes"));
+
+query.forEach(d=>{
+
+let r=d.data();
+
+if(r.guia===buscarGuia.value){
+
+historial.innerHTML+=`
+<div class="card">
+<b>Guía:</b> ${r.guia}<br>
+<b>Estado:</b> ${r.estado}
+</div>
+`;
+
+}
+
+});
+
+};
+
+/* BORRAR ANTIGUOS */
+
+window.borrarAntiguos=async function(){
+
+let query=
+await getDocs(collection(db,"paquetes"));
+
+query.forEach(async d=>{
+
+let r=d.data();
+
+if(r.estado==="ENTREGADO"){
+
+await deleteDoc(
+doc(db,"paquetes",d.id)
+);
+
+}
+
+});
+
+alert("Paquetes entregados eliminados");
+
+};
+
+/* EXPORTAR EXCEL */
+
+window.exportarExcel=async function(){
+
+let query=
+await getDocs(collection(db,"paquetes"));
+
+let csv="Conjunto,Guia,Torre,Apto,Estado\n";
+
+query.forEach(d=>{
+
+let r=d.data();
+
+csv+=
+r.conjunto+","+
+r.guia+","+
+r.torre+","+
+r.apto+","+
+r.estado+"\n";
+
+});
+
+let blob=new Blob([csv]);
+
+let link=document.createElement("a");
+
+link.href=URL.createObjectURL(blob);
+
+link.download="paquetes.csv";
+
+link.click();
+
+};
+
+/* CARGAR DATOS */
+
+async function cargarDatos(){
+
+let conjuntos=
+await getDocs(collection(db,"conjuntos"));
+
+let guardas=
+await getDocs(collection(db,"guardas"));
+
+conjuntoLogin.innerHTML="";
+filtroConjunto.innerHTML="";
+guardaRecibe.innerHTML="";
+guardaEntrega.innerHTML="";
+
+conjuntos.forEach(d=>{
+
+let nombre=d.data().nombre;
+
+conjuntoLogin.innerHTML+=
+`<option>${nombre}</option>`;
+
+filtroConjunto.innerHTML+=
+`<option>${nombre}</option>`;
+
+});
+
+guardas.forEach(d=>{
+
+let nombre=d.data().nombre;
+
+guardaRecibe.innerHTML+=
+`<option>${nombre}</option>`;
+
+guardaEntrega.innerHTML+=
+`<option>${nombre}</option>`;
+
+});
+
+}
+
+cargarDatos();
+
+</script>
+
+</body>
+</html>
