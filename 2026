@@ -1,0 +1,89 @@
+}
+
+});
+
+alert("Paquetes entregados eliminados");
+
+};
+
+/* EXPORTAR EXCEL */
+
+window.exportarExcel=async function(){
+
+let query=
+await getDocs(collection(db,"paquetes"));
+
+let csv="Conjunto,Guia,Torre,Apto,Estado\n";
+
+query.forEach(d=>{
+
+let r=d.data();
+
+csv+=
+r.conjunto+","+
+r.guia+","+
+r.torre+","+
+r.apto+","+
+r.estado+"\n";
+
+});
+
+let blob=new Blob([csv]);
+
+let link=document.createElement("a");
+
+link.href=URL.createObjectURL(blob);
+
+link.download="paquetes.csv";
+
+link.click();
+
+};
+
+/* CARGAR DATOS */
+
+async function cargarDatos(){
+
+let conjuntos=
+await getDocs(collection(db,"conjuntos"));
+
+let guardas=
+await getDocs(collection(db,"guardas"));
+
+conjuntoLogin.innerHTML="";
+filtroConjunto.innerHTML="";
+guardaRecibe.innerHTML="";
+guardaEntrega.innerHTML="";
+
+conjuntos.forEach(d=>{
+
+let nombre=d.data().nombre;
+
+conjuntoLogin.innerHTML+=
+`<option>${nombre}</option>`;
+
+filtroConjunto.innerHTML+=
+`<option>${nombre}</option>`;
+
+});
+
+guardas.forEach(d=>{
+
+let nombre=d.data().nombre;
+
+guardaRecibe.innerHTML+=
+`<option>${nombre}</option>`;
+
+guardaEntrega.innerHTML+=
+`<option>${nombre}</option>`;
+
+});
+
+}
+
+cargarDatos();
+
+</script>
+
+</body>
+</html>
